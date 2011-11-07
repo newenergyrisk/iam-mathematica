@@ -1,0 +1,739 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 8.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       157,          7]
+NotebookDataLength[     27663,        730]
+NotebookOptionsPosition[     24199,        606]
+NotebookOutlinePosition[     24575,        623]
+CellTagsIndexPosition[     24532,        620]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Independent Assets Model (IAM)", "Title",
+ CellChangeTimes->{{3.5130216986620903`*^9, 3.513021729331321*^9}, {
+  3.513028050034562*^9, 3.513028052863985*^9}, {3.513028093291266*^9, 
+  3.5130281445299*^9}, {3.513028184891119*^9, 3.5130281913774967`*^9}, {
+  3.513044727593875*^9, 3.513044728280015*^9}, {3.513048945553488*^9, 
+  3.513048946733274*^9}, {3.513049229419114*^9, 3.513049232079041*^9}, {
+  3.513093271263389*^9, 3.5130932876058397`*^9}, {3.51309639492691*^9, 
+  3.5130963999836082`*^9}, {3.51335969033668*^9, 3.5133597047697763`*^9}, {
+  3.513371039457837*^9, 3.513371040779792*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Model Parameters", "Section",
+ CellChangeTimes->{{3.513026433422261*^9, 3.513026440676396*^9}, {
+  3.513027951127387*^9, 3.513027954766963*^9}, {3.513028017727935*^9, 
+  3.513028019191657*^9}, {3.513028454222204*^9, 3.5130284620847073`*^9}, {
+  3.513045856578855*^9, 3.513045857829883*^9}, {3.5130471266033897`*^9, 
+  3.513047127275069*^9}}],
+
+Cell["\<\
+In this simple example, we have a group of 50 identical assets. They fail or \
+work independently of one another. Their expected performance is a constant, \
+\[OpenCurlyDoubleQuote]200\[CloseCurlyDoubleQuote] which can be thought of as \
+200 Watts if these assets each represent a solar panel. We aren\
+\[CloseCurlyQuote]t doing anything diurnal yet, let alone meteorological. 50 \
+panels with an expected 200 Watt output is a 10kW array.\
+\>", "Text",
+ CellChangeTimes->{{3.513093312064834*^9, 3.513093486351363*^9}, {
+  3.513094273931642*^9, 3.5130942909151983`*^9}, {3.5130945755681477`*^9, 
+  3.513094601239359*^9}, {3.513094639745953*^9, 3.513094644023286*^9}, {
+  3.513094753535831*^9, 3.513094802078648*^9}, {3.513095229995185*^9, 
+  3.513095231649645*^9}, {3.513095274946323*^9, 3.5130952820090218`*^9}, {
+  3.51309629113501*^9, 3.5130962971435747`*^9}, {3.5130964132978773`*^9, 
+  3.513096419496025*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"assetCount", " ", "=", " ", "50"}]], "Input",
+ CellChangeTimes->{{3.513027501027876*^9, 3.513027538166626*^9}, {
+   3.513027570669245*^9, 3.513027572779422*^9}, 3.513027900791892*^9, {
+   3.5130283376609373`*^9, 3.513028337892301*^9}, {3.513048386064687*^9, 
+   3.5130484271174097`*^9}, {3.5130931629352083`*^9, 3.513093188985598*^9}, {
+   3.513095286556655*^9, 3.513095288034822*^9}, {3.513095442860474*^9, 
+   3.513095444629026*^9}}],
+
+Cell[BoxData["50"], "Output",
+ CellChangeTimes->{3.5130275396648083`*^9, 3.513027577665901*^9, 
+  3.513027903837462*^9, 3.513028339124349*^9, 3.513048437643004*^9, 
+  3.513093496548163*^9, 3.513095288542137*^9, 3.513095447541547*^9, 
+  3.5133499170083714`*^9, 3.513452443661414*^9, 3.513522106432959*^9}]
+}, Open  ]],
+
+Cell[BoxData[
+ RowBox[{"expectedAssetPerformance", ":=", " ", "200"}]], "Input",
+ CellChangeTimes->{{3.513028259068733*^9, 3.513028266219363*^9}, {
+  3.51302879894561*^9, 3.513028799281169*^9}, {3.513048412021771*^9, 
+  3.5130484349099293`*^9}, {3.513077856187271*^9, 3.513077856998094*^9}, {
+  3.5130779260001087`*^9, 3.513077928575906*^9}, {3.5130931269516783`*^9, 
+  3.513093159982677*^9}, {3.513093446345193*^9, 3.5130934519924927`*^9}, {
+  3.513093700019619*^9, 3.513093705921753*^9}, {3.513096231564476*^9, 
+  3.51309623269759*^9}, {3.513096270852975*^9, 3.513096271185569*^9}, {
+  3.5130971738866587`*^9, 3.5130971747016*^9}}],
+
+Cell["\<\
+Next, we\[CloseCurlyQuote]ll assume a reliability of 0.98, meaning that in \
+any simulation period, the asset has 98% chance of performing, and a 2% \
+chance of failing. If it fails, we are going to assume it is repaired or \
+replaced just in time for the next simulation period. 50 panels with a 2% \
+chance of failure means that in any given time period, 1 panel is expected to \
+be down.\
+\>", "Text",
+ CellChangeTimes->{{3.513093522960828*^9, 3.5130936104555283`*^9}, {
+  3.513095327457612*^9, 3.5130954195709953`*^9}, {3.513095454723832*^9, 
+  3.5130954735620747`*^9}, {3.513096316966899*^9, 3.513096326455854*^9}, {
+  3.513096457078978*^9, 3.513096489704686*^9}, {3.513096524624741*^9, 
+  3.513096527152968*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"assetReliability", " ", "=", " ", "0.98"}]], "Input",
+ CellChangeTimes->{{3.51302829334932*^9, 3.51302830105977*^9}, {
+   3.513048417389922*^9, 3.5130484450215473`*^9}, {3.513094120357642*^9, 
+   3.51309412053298*^9}, {3.513095375069375*^9, 3.513095376420594*^9}, {
+   3.513095422211061*^9, 3.513095423420636*^9}, 3.513095477573786*^9}],
+
+Cell[BoxData["0.98`"], "Output",
+ CellChangeTimes->{3.513028438941573*^9, 3.5130484459788923`*^9, 
+  3.513094122019944*^9, 3.5130953955432367`*^9, 3.513095426260251*^9, 
+  3.513095478060256*^9, 3.5133499225397673`*^9, 3.513452443780868*^9, 
+  3.5135221067703648`*^9}]
+}, Open  ]],
+
+Cell["\<\
+assetReliability is essentially the only tunable parameter relating to \
+reliability in this model. All other parameters can be treated as known. \
+assetReliability could be determined from a claims/awards history.\
+\>", "Text",
+ CellChangeTimes->{{3.513108537564498*^9, 3.5131086502616777`*^9}}],
+
+Cell["\<\
+Next is the conversion from performance in watt-hours to dollars (the value \
+chosen is equivalent to $0.10 per kilowatt hour). All units of time in this \
+simulation will be in hours. One hour is going to be one simulation period. \
+The units of performance value are dollars per kilowatt hour.\
+\>", "Text",
+ CellChangeTimes->{{3.513094523200931*^9, 3.5130945639581738`*^9}, {
+  3.513094709622661*^9, 3.513094736919042*^9}, {3.513094829871605*^9, 
+  3.513094894536463*^9}, {3.5130952342093678`*^9, 3.513095257224661*^9}, {
+  3.5130963109370337`*^9, 3.5130963114876413`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"performanceValue", " ", "=", " ", "0.0001"}]], "Input",
+ CellChangeTimes->{{3.513094468706313*^9, 3.513094481199875*^9}, {
+  3.513094725033704*^9, 3.513094743129414*^9}, {3.513094856258115*^9, 
+  3.513094876336896*^9}}],
+
+Cell[BoxData["0.0001`"], "Output",
+ CellChangeTimes->{3.5130945021886253`*^9, 3.513095504791294*^9, 
+  3.513349925439646*^9, 3.513452443816257*^9, 3.5135221068903503`*^9}]
+}, Open  ]],
+
+Cell["\<\
+Parameters like these would not be captured in code. Instead, they would live \
+in their own file, and a user interface would exist to edit the asset groups, \
+and the models for each type of asset in the asset groups. As assets and \
+their descriptions get more complex, and assets groups get assembled into \
+portfolios, how we model assets gets trickier and getting this out of code \
+gets rapidly important.\
+\>", "Text",
+ CellChangeTimes->{{3.51309497041078*^9, 3.513095187457736*^9}, {
+  3.513096546033031*^9, 3.513096605762163*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Insurance Policy Parameters", "Section",
+ CellChangeTimes->{{3.513093654153831*^9, 3.513093663856042*^9}}],
+
+Cell["\<\
+The example policy duration is 365 days. Comvert to simulation units (24 \
+hours per day).\
+\>", "Text",
+ CellChangeTimes->{{3.513095528197626*^9, 3.513095564203336*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"policyDuration", " ", "=", " ", 
+  RowBox[{"365", " ", "*", " ", "24"}]}]], "Input",
+ CellChangeTimes->{{3.513093093037566*^9, 3.5130931196006603`*^9}}],
+
+Cell[BoxData["8760"], "Output",
+ CellChangeTimes->{3.5130931215315237`*^9, 3.513349930258957*^9, 
+  3.5134524438723392`*^9, 3.513522107065538*^9}]
+}, Open  ]],
+
+Cell["\<\
+There will be no payout unless more than 5% of the assets are down.\
+\>", "Text",
+ CellChangeTimes->{{3.513095643166169*^9, 3.513095681394505*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"deductible", " ", "=", " ", 
+  RowBox[{
+  "0.05", " ", "*", " ", "assetCount", " ", "*", " ", 
+   "expectedAssetPerformance", " ", "*", " ", "performanceValue"}]}]], "Input",\
+
+ CellChangeTimes->{{3.513028383894124*^9, 3.513028397484694*^9}, {
+   3.513028908634983*^9, 3.513028909874382*^9}, {3.513029040077448*^9, 
+   3.513029040307907*^9}, {3.513029590474115*^9, 3.513029594401341*^9}, {
+   3.513044657803319*^9, 3.513044657889105*^9}, {3.513047513219887*^9, 
+   3.513047513331439*^9}, {3.513048449248407*^9, 3.51304845317341*^9}, {
+   3.513048530030477*^9, 3.513048532317692*^9}, {3.513049068536326*^9, 
+   3.5130490688620872`*^9}, {3.513093717660922*^9, 3.513093719300044*^9}, {
+   3.513094248927388*^9, 3.513094252364666*^9}, {3.513095604960307*^9, 
+   3.5130956269099703`*^9}, {3.513095684750551*^9, 3.513095714396261*^9}, {
+   3.513095910751767*^9, 3.5130959146875887`*^9}, 3.5130960092323217`*^9, {
+   3.51309712536897*^9, 3.513097150596694*^9}, {3.513097185489871*^9, 
+   3.513097194566292*^9}, {3.5130978399545097`*^9, 3.513097879155143*^9}}],
+
+Cell[BoxData["0.05`"], "Output",
+ CellChangeTimes->{3.51309793389008*^9, 3.5133499339919853`*^9, 
+  3.513452443918421*^9, 3.513522107118219*^9}]
+}, Open  ]],
+
+Cell["\<\
+This solar panel array produces $1/hour of solar power. The deductible is \
+$0.05. Only if the losses in any one-hour period exceed 5 cents is there a \
+payout.\
+\>", "Text",
+ CellChangeTimes->{{3.513097948336073*^9, 3.513098000439682*^9}, {
+  3.513107208215501*^9, 3.513107271029298*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Probability Distributions", "Section",
+ CellChangeTimes->{{3.513045851236937*^9, 3.513045861530758*^9}, {
+   3.51304711981301*^9, 3.513047139570466*^9}, 3.513099084171837*^9}],
+
+Cell[TextData[{
+ "The following vector is a bernoulli distribution, with one element in the \
+vector for each asset. ",
+ StyleBox["Mathematica\[CloseCurlyQuote]s ",
+  FontSlant->"Italic"],
+ "RandomVariate function generates a vector assetCount long, with each \
+component of the vector distributed to the Bernoulli distribution."
+}], "Text",
+ CellChangeTimes->{{3.513093939301814*^9, 3.513094046866329*^9}, {
+  3.513097286831221*^9, 3.513097345883342*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"assetPerformanceV", "[", "t_", "]"}], " ", ":=", "  ", 
+  RowBox[{"expectedAssetPerformance", " ", "*", " ", 
+   RowBox[{"RandomVariate", "[", 
+    RowBox[{
+     RowBox[{"BernoulliDistribution", "[", "assetReliability", "]"}], ",", 
+     " ", "assetCount"}], "]"}]}]}]], "Input",
+ CellChangeTimes->{{3.513028542648065*^9, 3.5130285633035383`*^9}, {
+   3.51304459894734*^9, 3.513044601825482*^9}, {3.51304847133904*^9, 
+   3.513048485476115*^9}, {3.513077992962306*^9, 3.513078007745777*^9}, {
+   3.513078239302362*^9, 3.513078247563568*^9}, {3.513093061065827*^9, 
+   3.513093064343767*^9}, {3.5130937385912457`*^9, 3.513093777444707*^9}, {
+   3.513093841123487*^9, 3.513093864537181*^9}, 3.513096018076078*^9, {
+   3.513097445712936*^9, 3.5130974815913563`*^9}}],
+
+Cell["\<\
+Example: asset performance factors at time t=32 (e.g., 8am-9am on the second \
+day of the simulation). \
+\>", "Text",
+ CellChangeTimes->{{3.513094058955674*^9, 3.513094059610984*^9}, {
+   3.513094170842698*^9, 3.513094208308588*^9}, {3.513095798844915*^9, 
+   3.513095799667725*^9}, {3.513096661881239*^9, 3.513096673695633*^9}, 
+   3.513097380437984*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"assetPerformanceV", "[", "32", "]"}]], "Input",
+ CellChangeTimes->{{3.513094080656324*^9, 3.513094102142249*^9}, {
+  3.513094165117546*^9, 3.513094166100182*^9}, {3.513096119043652*^9, 
+  3.513096130273149*^9}, {3.5130974974106827`*^9, 3.513097498223135*^9}}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+  "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "0",
+    ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", 
+   ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", 
+   ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", 
+   ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", 
+   ",", "200", ",", "200", ",", "200", ",", "200", ",", "0", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "0", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200"}], "}"}]], "Output",
+ CellChangeTimes->{3.5134524440339813`*^9, 3.513522107300439*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"assetPerformanceV", "[", "32", "]"}]], "Input",
+ CellChangeTimes->{3.513349950831232*^9}],
+
+Cell[BoxData[
+ RowBox[{"{", 
+  RowBox[{
+  "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", "200", ",", 
+   "200", ",", "200"}], "}"}]], "Output",
+ CellChangeTimes->{{3.513349950921503*^9, 3.513349959923745*^9}, 
+   3.513452444068152*^9, 3.5135221073871813`*^9}]
+}, Open  ]],
+
+Cell["\<\
+Because there are 50 assets in our example, there are 50 elements in the \
+vector. Re-evaluating the vector generates a new vector.\
+\>", "Text",
+ CellChangeTimes->{{3.513097389392891*^9, 3.513097417460783*^9}}],
+
+Cell["\<\
+Next we aggregate to get the performance of the asset group:\
+\>", "Text",
+ CellChangeTimes->{{3.513096695385417*^9, 3.5130967097449617`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"performance", "[", "t_", "]"}], " ", ":=", " ", 
+  RowBox[{"Total", "[", 
+   RowBox[{"assetPerformanceV", "[", "t", "]"}], "]"}]}]], "Input",
+ CellChangeTimes->{{3.513028708377487*^9, 3.5130287164164543`*^9}, {
+  3.513028755490861*^9, 3.5130287868421087`*^9}, {3.5130288208821363`*^9, 
+  3.513028829427966*^9}, {3.513029375704414*^9, 3.513029380463969*^9}, {
+  3.513029428202581*^9, 3.51302943454456*^9}, {3.513044615028347*^9, 
+  3.513044618289641*^9}, {3.513048490617655*^9, 3.513048519166627*^9}, {
+  3.51304862460739*^9, 3.513048646095111*^9}, {3.513048883114678*^9, 
+  3.513048954247774*^9}, {3.513077978048731*^9, 3.513077979913357*^9}, {
+  3.513078041072818*^9, 3.513078055449821*^9}, {3.513078256365011*^9, 
+  3.5130782641948633`*^9}, {3.513092935953206*^9, 3.513092937703375*^9}, {
+  3.5130938733338547`*^9, 3.513093919606502*^9}, {3.513096176050565*^9, 
+  3.513096190361081*^9}, {3.513096765549657*^9, 3.513096782145322*^9}, {
+  3.5130976754735603`*^9, 3.513097682528923*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Performance Deficits and Payouts\
+\>", "Section",
+ CellChangeTimes->{{3.513098765812703*^9, 3.5130987981147346`*^9}, {
+  3.5131015233371267`*^9, 3.513101557273479*^9}}],
+
+Cell["\<\
+Next we find the performance deficit, and convert that into a dollar loss.\
+\>", "Text",
+ CellChangeTimes->{{3.513096815948532*^9, 3.513096872873081*^9}, {
+  3.513099010655923*^9, 3.513099018420864*^9}, {3.5131016301378*^9, 
+  3.513101637016776*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"loss", "[", "t_", "]"}], " ", ":=", 
+  RowBox[{"performanceValue", " ", "*", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"expectedAssetPerformance", " ", "*", " ", "assetCount"}], " ", 
+     "-", " ", 
+     RowBox[{"performance", "[", "t", "]"}]}], ")"}]}]}]], "Input",
+ CellChangeTimes->{{3.51309292911917*^9, 3.513092976295843*^9}, {
+   3.513093021840226*^9, 3.513093048545065*^9}, 3.513095887545642*^9, {
+   3.513095937158279*^9, 3.513095953111598*^9}, {3.513096878875977*^9, 
+   3.513096959579486*^9}, {3.513097004310499*^9, 3.513097023596443*^9}, {
+   3.513097663350375*^9, 3.5130976664972982`*^9}, {3.513097712192658*^9, 
+   3.5130977729293118`*^9}, 3.5130978068135147`*^9, {3.513101592732827*^9, 
+   3.513101616381366*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"loss", "[", "72", "]"}]], "Input",
+ CellChangeTimes->{{3.5134524237100067`*^9, 3.513452431219596*^9}}],
+
+Cell[BoxData["0.060000000000000005`"], "Output",
+ CellChangeTimes->{{3.513452435486292*^9, 3.513452449824349*^9}, 
+   3.5135221076225557`*^9}]
+}, Open  ]],
+
+Cell["\<\
+Convert the performance deficit to a dollar value and compare it with the \
+deductible.\
+\>", "Text",
+ CellChangeTimes->{{3.513096815948532*^9, 3.513096872873081*^9}, {
+  3.513099010655923*^9, 3.5130990466849537`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"unclampedPayout", "[", "t_", "]"}], " ", ":=", " ", 
+  RowBox[{
+   RowBox[{"loss", "[", "t", "]"}], " ", "-", " ", "deductible"}]}]], "Input",\
+
+ CellChangeTimes->{{3.513098286045504*^9, 3.513098321846065*^9}, {
+  3.513098500919189*^9, 3.513098502117095*^9}, {3.513098542524737*^9, 
+  3.513098542930539*^9}, {3.513101224475284*^9, 3.513101227178393*^9}, {
+  3.513101317627714*^9, 3.513101320728813*^9}, {3.5131014923123713`*^9, 
+  3.513101494922215*^9}, {3.5131016683931637`*^9, 3.5131016966451406`*^9}}],
+
+Cell[TextData[{
+ "There is a major ",
+ StyleBox["Mathematica",
+  FontSlant->"Italic"],
+ " gotcha avoided in the next step:"
+}], "Text",
+ CellChangeTimes->{{3.513104678988221*^9, 3.5131046927290573`*^9}}],
+
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"payout", "[", "t_", "]"}], " ", ":=", " ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"UnitStep", "[", "x", "]"}], " ", "*", " ", "x"}], " ", "/.", " ", 
+   RowBox[{"x", "->", " ", 
+    RowBox[{"unclampedPayout", "[", "t", "]"}]}]}]}]], "Input",
+ CellChangeTimes->{{3.513101295988762*^9, 3.513101436004491*^9}, {
+  3.513101702257667*^9, 3.513101706741764*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Time Series Generation", "Section",
+ CellChangeTimes->{{3.513099105023431*^9, 3.513099110036942*^9}}],
+
+Cell[BoxData[
+ RowBox[{"award", " ", ":=", " ", 
+  RowBox[{"Sum", "[", 
+   RowBox[{
+    RowBox[{"payout", "[", "t", "]"}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"t", ",", " ", "0", ",", " ", 
+      RowBox[{"policyDuration", " ", "-", " ", "1"}]}], "}"}]}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.513099157761705*^9, 3.51309924543187*^9}, {
+   3.5131010770134497`*^9, 3.513101079274363*^9}, {3.5131036725796003`*^9, 
+   3.5131036734393263`*^9}, {3.5131042736261683`*^9, 3.513104289634132*^9}, 
+   3.5131043864341927`*^9, {3.513104485019606*^9, 3.5131044877392817`*^9}, 
+   3.513104777484783*^9, {3.513104827519568*^9, 3.513104837404538*^9}, 
+   3.5131056935138693`*^9}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData["award"], "Input",
+ CellChangeTimes->{{3.5134524653281317`*^9, 3.5134524890224123`*^9}}],
+
+Cell[BoxData["11.479999999999897`"], "Output",
+ CellChangeTimes->{{3.513452482712019*^9, 3.513452490096277*^9}, 
+   3.5135221085223103`*^9, {3.513522540534155*^9, 3.513522545293539*^9}}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Ensembles / Monte Carlo Averages\
+\>", "Section",
+ CellChangeTimes->{{3.5131049627389183`*^9, 3.5131050160104322`*^9}, {
+  3.5131056222805243`*^9, 3.5131056272608356`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"ensembleCount", " ", "=", " ", "10"}]], "Input",
+ CellChangeTimes->{{3.5131055788178253`*^9, 3.51310559777575*^9}, 
+   3.513107019022387*^9}],
+
+Cell[BoxData["10"], "Output",
+ CellChangeTimes->{3.513107020982967*^9, 3.513350175484775*^9, 
+  3.513452444280614*^9, 3.513522108707471*^9}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"averageAward", " ", "=", " ", 
+  RowBox[{
+   RowBox[{"Sum", "[", 
+    RowBox[{"award", ",", " ", 
+     RowBox[{"{", 
+      RowBox[{"i", ",", " ", "ensembleCount"}], "}"}]}], "]"}], " ", "/", " ",
+    "ensembleCount"}]}]], "Input",
+ CellChangeTimes->{{3.513105022239332*^9, 3.513105035397171*^9}, {
+  3.513105630406261*^9, 3.513105712690061*^9}, {3.513350267040571*^9, 
+  3.5133502710682287`*^9}}],
+
+Cell[BoxData["10.536999999999901`"], "Output",
+ CellChangeTimes->{
+  3.5131060667309837`*^9, 3.513107044063775*^9, {3.5131070909467363`*^9, 
+   3.513107099590835*^9}, 3.513350184552224*^9, 3.513350296436285*^9, 
+   3.5134524495862913`*^9, 3.5135221148944187`*^9, 3.513522607056988*^9, 
+   3.51352265059542*^9}]
+}, Open  ]],
+
+Cell["\<\
+The preceding expression takes about 6 seconds to evaluate on 2.4 GHz Core 2 \
+Duo Mac Laptop.\
+\>", "Text",
+ CellChangeTimes->{{3.513106084603259*^9, 3.513106097623128*^9}, {
+  3.513106151312625*^9, 3.513106162000422*^9}, {3.513107049616765*^9, 
+  3.513107054717329*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Exact Expression Using Binomial Distribution", "Section",
+ CellChangeTimes->{{3.513107068654183*^9, 3.5131070709328613`*^9}, {
+  3.5131071175021963`*^9, 3.5131071225479107`*^9}}],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[
+ RowBox[{"policyDuration", " ", "*", " ", "performanceValue", " ", "*", " ", 
+  "expectedAssetPerformance", " ", "*", " ", 
+  RowBox[{"Sum", "[", 
+   RowBox[{
+    RowBox[{
+     RowBox[{"Binomial", "[", 
+      RowBox[{"assetCount", ",", " ", "failures"}], "]"}], "*", " ", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"1.0", " ", "-", " ", "assetReliability"}], ")"}], "^", 
+      "failures"}], " ", 
+     RowBox[{"assetReliability", "^", 
+      RowBox[{"(", 
+       RowBox[{"assetCount", " ", "-", " ", "failures"}], ")"}]}], " ", "*", 
+     " ", 
+     RowBox[{"(", 
+      RowBox[{"failures", " ", "-", " ", "2.5"}], ")"}]}], ",", " ", 
+    RowBox[{"{", 
+     RowBox[{"failures", ",", " ", "3", ",", " ", "50"}], "}"}]}], 
+   "]"}]}]], "Input",
+ CellChangeTimes->{{3.513106008834034*^9, 3.513106008851149*^9}, {
+  3.513106404399686*^9, 3.5131065201492243`*^9}, {3.513106557744423*^9, 
+  3.5131065619338913`*^9}, {3.513106629936514*^9, 3.513106697439465*^9}, {
+  3.513106739422015*^9, 3.513106760275556*^9}, {3.513106826037417*^9, 
+  3.513106977609345*^9}}],
+
+Cell[BoxData["10.639405505412487`"], "Output",
+ CellChangeTimes->{3.5131069784199343`*^9, 3.51345244970741*^9, 
+  3.513522115084662*^9}]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+So Far Unimplemented, but Very Important to Flush Out Modeling, Analysis and \
+Workflow\
+\>", "Section",
+ CellChangeTimes->{{3.5131080126744013`*^9, 3.5131080466977663`*^9}, {
+  3.513342350064399*^9, 3.513342363189089*^9}, {3.513343000379341*^9, 
+  3.513343033920966*^9}}],
+
+Cell[CellGroupData[{
+
+Cell["Multiple Parameters", "Subsection",
+ CellChangeTimes->{{3.513108066115169*^9, 3.513108099266917*^9}, {
+  3.513342143582542*^9, 3.51334215271369*^9}}],
+
+Cell["\<\
+It is very important that we are able to demonstrate multiple failure modes \
+and to distinguish between expected underperformance of components as happens \
+say, when the sun doesn\[CloseCurlyQuote]t shine, versus failures that we are \
+more likely to include policy coverage for, such as a fire in an inverter.
+
+To illustrate that the model will need at least two parameters.\
+\>", "Text",
+ CellChangeTimes->{{3.51310810981922*^9, 3.51310817809861*^9}, {
+  3.513108465781416*^9, 3.513108489211216*^9}, {3.5133421574580393`*^9, 
+  3.5133421906708527`*^9}, {3.5133422529346046`*^9, 3.5133422875848846`*^9}, {
+  3.5133423707577677`*^9, 3.513342447991756*^9}, {3.5133425805912*^9, 
+  3.513342633154489*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Calibration (also \[OpenCurlyDoubleQuote]known as parameter estimation\
+\[CloseCurlyDoubleQuote])\
+\>", "Subsection",
+ CellChangeTimes->{{3.513108066115169*^9, 3.513108099266917*^9}}],
+
+Cell["\<\
+If given a hypothetical claims/awards history, we will want to go back and \
+estimate the one tunable parameter in this model (assetReliability).\
+\>", "Text",
+ CellChangeTimes->{{3.51310810981922*^9, 3.51310817809861*^9}, {
+  3.513108465781416*^9, 3.513108489211216*^9}}]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Award Distribution", "Subsection",
+ CellChangeTimes->{{3.513108338172497*^9, 3.513108399706661*^9}}],
+
+Cell["\<\
+We have displayed average but have as yet done no other characterization or \
+plotting of the award distribution.\
+\>", "Text",
+ CellChangeTimes->{{3.513108431391861*^9, 3.513108455723301*^9}}]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1440, 852},
+WindowMargins->{{0, Automatic}, {Automatic, 0}},
+Magnification->1.5,
+FrontEndVersion->"8.0 for Mac OS X x86 (32-bit, 64-bit Kernel) (February 23, \
+2011)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[579, 22, 600, 8, 114, "Title"],
+Cell[CellGroupData[{
+Cell[1204, 34, 347, 5, 100, "Section"],
+Cell[1554, 41, 923, 14, 84, "Text"],
+Cell[CellGroupData[{
+Cell[2502, 59, 459, 7, 40, "Input"],
+Cell[2964, 68, 304, 4, 40, "Output"]
+}, Open  ]],
+Cell[3283, 75, 633, 9, 40, "Input"],
+Cell[3919, 86, 728, 12, 84, "Text"],
+Cell[CellGroupData[{
+Cell[4672, 102, 360, 5, 40, "Input"],
+Cell[5035, 109, 267, 4, 40, "Output"]
+}, Open  ]],
+Cell[5317, 116, 306, 5, 62, "Text"],
+Cell[5626, 123, 586, 9, 62, "Text"],
+Cell[CellGroupData[{
+Cell[6237, 136, 243, 4, 40, "Input"],
+Cell[6483, 142, 171, 2, 40, "Output"]
+}, Open  ]],
+Cell[6669, 147, 549, 9, 84, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[7255, 161, 112, 1, 100, "Section"],
+Cell[7370, 164, 180, 4, 39, "Text"],
+Cell[CellGroupData[{
+Cell[7575, 172, 176, 3, 40, "Input"],
+Cell[7754, 177, 146, 2, 40, "Output"]
+}, Open  ]],
+Cell[7915, 182, 157, 3, 39, "Text"],
+Cell[CellGroupData[{
+Cell[8097, 189, 1076, 17, 40, "Input"],
+Cell[9176, 208, 144, 2, 40, "Output"]
+}, Open  ]],
+Cell[9335, 213, 299, 6, 39, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[9671, 224, 181, 2, 100, "Section"],
+Cell[9855, 228, 456, 9, 62, "Text"],
+Cell[10314, 239, 798, 14, 42, "Input"],
+Cell[11115, 255, 365, 7, 39, "Text"],
+Cell[CellGroupData[{
+Cell[11505, 266, 283, 4, 40, "Input"],
+Cell[11791, 272, 748, 12, 64, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[12576, 289, 113, 2, 40, "Input"],
+Cell[12692, 293, 804, 13, 64, "Output"]
+}, Open  ]],
+Cell[13511, 309, 221, 4, 39, "Text"],
+Cell[13735, 315, 152, 3, 39, "Text"],
+Cell[13890, 320, 1021, 16, 42, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[14948, 341, 178, 4, 100, "Section"],
+Cell[15129, 347, 260, 5, 39, "Text"],
+Cell[15392, 354, 765, 15, 42, "Input"],
+Cell[CellGroupData[{
+Cell[16182, 373, 126, 2, 40, "Input"],
+Cell[16311, 377, 142, 2, 40, "Output"]
+}, Open  ]],
+Cell[16468, 382, 228, 5, 39, "Text"],
+Cell[16699, 389, 539, 10, 42, "Input"],
+Cell[17241, 401, 203, 6, 39, "Text"],
+Cell[17447, 409, 388, 9, 42, "Input"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[17872, 423, 107, 1, 100, "Section"],
+Cell[17982, 426, 678, 14, 40, "Input"],
+Cell[CellGroupData[{
+Cell[18685, 444, 101, 1, 40, "Input"],
+Cell[18789, 447, 186, 2, 40, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[19024, 455, 182, 4, 100, "Section"],
+Cell[CellGroupData[{
+Cell[19231, 463, 165, 3, 40, "Input"],
+Cell[19399, 468, 140, 2, 40, "Output"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[19576, 475, 420, 10, 40, "Input"],
+Cell[19999, 487, 310, 5, 40, "Output"]
+}, Open  ]],
+Cell[20324, 495, 282, 6, 39, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[20643, 506, 184, 2, 100, "Section"],
+Cell[CellGroupData[{
+Cell[20852, 512, 1075, 25, 87, "Input"],
+Cell[21930, 539, 136, 2, 40, "Output"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[22115, 547, 282, 6, 100, "Section"],
+Cell[CellGroupData[{
+Cell[22422, 557, 155, 2, 51, "Subsection"],
+Cell[22580, 561, 715, 12, 107, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23332, 578, 193, 4, 51, "Subsection"],
+Cell[23528, 584, 282, 5, 39, "Text"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23847, 594, 106, 1, 51, "Subsection"],
+Cell[23956, 597, 203, 4, 39, "Text"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
